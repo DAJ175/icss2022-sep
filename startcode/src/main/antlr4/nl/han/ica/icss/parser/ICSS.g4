@@ -45,8 +45,35 @@ ASSIGNMENT_OPERATOR: ':=';
 
 
 //--- PARSER: ---
-stylesheet: styleclass* EOF;
+stylesheet: stylerule* EOF;
 
-styleclass: (LOWER_IDENT | CAPITAL_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE styleline* CLOSE_BRACE;
+stylerule: tagselector | classselector | idselector | variableassignment;
 
-styleline: LOWER_IDENT COLON (COLOR | PIXELSIZE | PERCENTAGE) SEMICOLON;
+tagselector: (LOWER_IDENT | CAPITAL_IDENT) OPEN_BRACE line* CLOSE_BRACE;
+classselector: CLASS_IDENT OPEN_BRACE line* CLOSE_BRACE;
+idselector: ID_IDENT OPEN_BRACE line* CLOSE_BRACE;
+variableassignment: variablereference ASSIGNMENT_OPERATOR propertyvalue SEMICOLON ;
+
+line: styleline | ifstatement;
+styleline: propertyname COLON propertyvalue SEMICOLON;
+
+propertyname: LOWER_IDENT;
+propertyvalue: expression | value;
+
+booleanStatement: TRUE | FALSE | booleanvarref;
+
+ifstatement: ifclause thenclause elseclause?;
+ifclause: IF BOX_BRACKET_OPEN booleanStatement BOX_BRACKET_CLOSE;
+elseclause: ELSE thenclause;
+thenclause: OPEN_BRACE (ifclause | styleline)* CLOSE_BRACE;
+
+expression: operatorvalue | expression operations operatorvalue;
+operations: PLUS | MIN | MUL;
+value: TRUE | FALSE | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | variablereference;
+booleanvalue: TRUE | FALSE | booleanvarref;
+operatorvalue: PIXELSIZE | PERCENTAGE | SCALAR | operationalvarref;
+variablereference: booleanvarref | operationalvarref | CAPITAL_IDENT | LOWER_IDENT;
+
+booleanvarref: CAPITAL_IDENT | LOWER_IDENT;
+operationalvarref: CAPITAL_IDENT | LOWER_IDENT;
+
