@@ -21,8 +21,7 @@ public class ElseClause extends ASTNode{
     @Override
     public ArrayList<ASTNode> getChildren() {
         ArrayList<ASTNode> children = new ArrayList<>();
-        children.addAll(body);
-
+        //children.addAll(body);
         return children;
     }
 

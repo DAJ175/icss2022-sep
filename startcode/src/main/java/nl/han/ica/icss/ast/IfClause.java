@@ -31,10 +31,10 @@ public class IfClause extends ASTNode {
     @Override
     public ArrayList<ASTNode> getChildren() {
         ArrayList<ASTNode> children = new ArrayList<>();
-        children.add(conditionalExpression);
-        children.addAll(body);
-        if (elseClause!=null)
-            children.add(elseClause);
+        //children.add(conditionalExpression);
+        //children.addAll(body);
+        //if (elseClause!=null)
+        //    children.add(elseClause);
 
         return children;
     }

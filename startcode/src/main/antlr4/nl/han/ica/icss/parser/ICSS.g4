@@ -45,35 +45,54 @@ ASSIGNMENT_OPERATOR: ':=';
 
 
 //--- PARSER: ---
-stylesheet: stylerule* EOF;
+stylesheet: line* EOF;
 
-stylerule: tagselector | classselector | idselector | variableassignment;
+line: stylerule | variableassignment;
 
-tagselector: (LOWER_IDENT | CAPITAL_IDENT) OPEN_BRACE line* CLOSE_BRACE;
-classselector: CLASS_IDENT OPEN_BRACE line* CLOSE_BRACE;
-idselector: ID_IDENT OPEN_BRACE line* CLOSE_BRACE;
-variableassignment: variablereference ASSIGNMENT_OPERATOR propertyvalue SEMICOLON ;
+stylerule: selector OPEN_BRACE styleline* CLOSE_BRACE;
+variableassignment: variablereference ASSIGNMENT_OPERATOR expression SEMICOLON;
 
-line: styleline | ifstatement;
-styleline: propertyname COLON propertyvalue SEMICOLON;
+selector: tagselector | classselector | idselector;
+tagselector: (LOWER_IDENT | CAPITAL_IDENT) ;
+classselector: CLASS_IDENT;
+idselector: ID_IDENT;
+
+styleline: declaration | ifstatement;
+
+declaration: propertyname COLON expression SEMICOLON;
 
 propertyname: LOWER_IDENT;
-propertyvalue: expression | value;
 
-booleanStatement: TRUE | FALSE | booleanvarref;
-
-ifstatement: ifclause thenclause elseclause?;
-ifclause: IF BOX_BRACKET_OPEN booleanStatement BOX_BRACKET_CLOSE;
+ifstatement: ifclause elseclause?;
+ifclause: IF BOX_BRACKET_OPEN conditionalexpression BOX_BRACKET_CLOSE thenclause;
 elseclause: ELSE thenclause;
-thenclause: OPEN_BRACE (ifclause | styleline)* CLOSE_BRACE;
+thenclause: OPEN_BRACE styleline* CLOSE_BRACE;
 
-expression: operatorvalue | expression operations operatorvalue;
-operations: PLUS | MIN | MUL;
-value: TRUE | FALSE | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | variablereference;
-booleanvalue: TRUE | FALSE | booleanvarref;
-operatorvalue: PIXELSIZE | PERCENTAGE | SCALAR | operationalvarref;
-variablereference: booleanvarref | operationalvarref | CAPITAL_IDENT | LOWER_IDENT;
+conditionalexpression: booleanvalue | booleanvarref;
+expression: value | operation | variablereference;
 
+operation: (addoperation | subtractoperation | multiplyoperation)+;
+addoperation: operatorvalue PLUS operatorvalue;
+subtractoperation: operatorvalue MIN operatorvalue;
+multiplyoperation: operatorvalue MUL operatorvalue;
+
+
+value: booleanvalue | colorvalue | pixelvalue | percentagevalue | scalarvalue | variablereference;
+
+operatorvalue: pixelvalue | percentagevalue | scalarvalue | operationalvarref;
+pixelvalue: PIXELSIZE;
+percentagevalue: PERCENTAGE;
+scalarvalue: SCALAR;
+booleanvalue: TRUE | FALSE;
+colorvalue: COLOR;
+
+variablereference: scalarvarref | pixelvarref | percentagevarref | booleanvarref | colorvarref |  operationalvarref;
+
+scalarvarref: CAPITAL_IDENT | LOWER_IDENT;
+pixelvarref: CAPITAL_IDENT | LOWER_IDENT;
+percentagevarref: CAPITAL_IDENT | LOWER_IDENT;
 booleanvarref: CAPITAL_IDENT | LOWER_IDENT;
-operationalvarref: CAPITAL_IDENT | LOWER_IDENT;
+colorvarref: CAPITAL_IDENT | LOWER_IDENT;
+operationalvarref: percentagevarref | pixelvarref | scalarvarref;
+
 
