@@ -257,7 +257,11 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterIfclause(nl.han.ica.icss.parser.ICSSParser.IfclauseContext ctx) {
-		ASTNode ifClause = new IfClause();
+		Expression conditionalExpression = ctx.conditionalexpression().booleanvalue() != null
+				? new BoolLiteral(ctx.conditionalexpression().getText())
+				: new VariableReference(ctx.conditionalexpression().getText());
+		ArrayList<ASTNode> body = new ArrayList();
+		ASTNode ifClause = new IfClause(conditionalExpression, body);
 		currentContainer.push(ifClause);
 	}
 
@@ -270,7 +274,8 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterElseclause(nl.han.ica.icss.parser.ICSSParser.ElseclauseContext ctx) {
-		ASTNode elseClause = new ElseClause();
+		ArrayList<ASTNode> body = new ArrayList();
+		ASTNode elseClause = new ElseClause(body);
 		currentContainer.push(elseClause);
 	}
 
