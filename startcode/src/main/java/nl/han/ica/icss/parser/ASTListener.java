@@ -126,69 +126,108 @@ public class ASTListener extends ICSSBaseListener {
 
 
 	@Override
-	public void enterBooleanvalue(nl.han.ica.icss.parser.ICSSParser.BooleanvalueContext ctx) {
+	public void enterBooleanLiteral(nl.han.ica.icss.parser.ICSSParser.BooleanLiteralContext ctx) {
 		ASTNode booleanValue = new BoolLiteral(ctx.getText());
 		currentContainer.push(booleanValue);
 	}
 
 	@Override
-	public void exitBooleanvalue(nl.han.ica.icss.parser.ICSSParser.BooleanvalueContext ctx) {
+	public void exitBooleanLiteral(nl.han.ica.icss.parser.ICSSParser.BooleanLiteralContext ctx) {
 		BoolLiteral boolLiteral = (BoolLiteral) currentContainer.pop();
 		currentContainer.peek().addChild(boolLiteral);
 	}
 
 
 	@Override
-	public void enterColorvalue(nl.han.ica.icss.parser.ICSSParser.ColorvalueContext ctx) {
+	public void enterColorLiteral(nl.han.ica.icss.parser.ICSSParser.ColorLiteralContext ctx) {
 		ASTNode colorvalue = new ColorLiteral(ctx.getText());
 		currentContainer.push(colorvalue);
 	}
 
 	@Override
-	public void exitColorvalue(nl.han.ica.icss.parser.ICSSParser.ColorvalueContext ctx) {
+	public void exitColorLiteral(nl.han.ica.icss.parser.ICSSParser.ColorLiteralContext ctx) {
 		ColorLiteral colorLiteral = (ColorLiteral) currentContainer.pop();
 		currentContainer.peek().addChild(colorLiteral);
 	}
 
 
 	@Override
-	public void enterPercentagevalue(nl.han.ica.icss.parser.ICSSParser.PercentagevalueContext ctx) {
+	public void enterPercentageLiteral(nl.han.ica.icss.parser.ICSSParser.PercentageLiteralContext ctx) {
 		ASTNode percentagevalue = new PercentageLiteral(ctx.getText());
 		currentContainer.push(percentagevalue);
 	}
 
 	@Override
-	public void exitPercentagevalue(nl.han.ica.icss.parser.ICSSParser.PercentagevalueContext ctx) {
+	public void exitPercentageLiteral(nl.han.ica.icss.parser.ICSSParser.PercentageLiteralContext ctx) {
 		PercentageLiteral percentageLiteral = (PercentageLiteral) currentContainer.pop();
 		currentContainer.peek().addChild(percentageLiteral);
 	}
 
 
 	@Override
-	public void enterPixelvalue(nl.han.ica.icss.parser.ICSSParser.PixelvalueContext ctx) {
+	public void enterPixelLiteral(nl.han.ica.icss.parser.ICSSParser.PixelLiteralContext ctx) {
 		ASTNode pixelValue = new PixelLiteral(ctx.getText());
 		currentContainer.push(pixelValue);
 	}
 
 	@Override
-	public void exitPixelvalue(nl.han.ica.icss.parser.ICSSParser.PixelvalueContext ctx) {
+	public void exitPixelLiteral(nl.han.ica.icss.parser.ICSSParser.PixelLiteralContext ctx) {
 		PixelLiteral pixelvalue = (PixelLiteral) currentContainer.pop();
 		currentContainer.peek().addChild(pixelvalue);
 	}
 
 
 	@Override
-	public void enterScalarvalue(nl.han.ica.icss.parser.ICSSParser.ScalarvalueContext ctx) {
+	public void enterScalarLiteral(nl.han.ica.icss.parser.ICSSParser.ScalarLiteralContext ctx) {
 		ASTNode scalarValue = new ScalarLiteral(ctx.getText());
 		currentContainer.push(scalarValue);
 	}
 
 	@Override
-	public void exitScalarvalue(nl.han.ica.icss.parser.ICSSParser.ScalarvalueContext ctx) {
+	public void exitScalarLiteral(nl.han.ica.icss.parser.ICSSParser.ScalarLiteralContext ctx) {
 		ScalarLiteral scalarValue = (ScalarLiteral) currentContainer.pop();
 		currentContainer.peek().addChild(scalarValue);
 	}
 
+
+	@Override
+	public void enterOperatorPixelLiteral(nl.han.ica.icss.parser.ICSSParser.OperatorPixelLiteralContext ctx) {
+		ASTNode operatorPixelLiteral = new PixelLiteral(ctx.getText());
+		currentContainer.push(operatorPixelLiteral);
+	}
+
+	@Override
+	public void exitOperatorPixelLiteral(nl.han.ica.icss.parser.ICSSParser.OperatorPixelLiteralContext ctx) {
+		PixelLiteral operatorPixelLiteral = (PixelLiteral) currentContainer.pop();
+		currentContainer.peek().addChild(operatorPixelLiteral);
+	}
+
+
+	@Override
+	public void enterOperatorScalarLiteral(nl.han.ica.icss.parser.ICSSParser.OperatorScalarLiteralContext ctx) {
+		ASTNode operatorScalarLiteral = new ScalarLiteral(ctx.getText());
+		currentContainer.push(operatorScalarLiteral);
+	}
+
+	@Override
+	public void exitOperatorScalarLiteral(nl.han.ica.icss.parser.ICSSParser.OperatorScalarLiteralContext ctx) {
+		ScalarLiteral operatorScalarLiteral = (ScalarLiteral) currentContainer.pop();
+		currentContainer.peek().addChild(operatorScalarLiteral);
+	}
+
+
+	@Override
+	public void enterOperatorVariableReference(nl.han.ica.icss.parser.ICSSParser.OperatorVariableReferenceContext ctx) {
+		ASTNode operatorVariableReference = new VariableReference(ctx.getText());
+		currentContainer.push(operatorVariableReference);
+	}
+
+	@Override
+	public void exitOperatorVariableReference(nl.han.ica.icss.parser.ICSSParser.OperatorVariableReferenceContext ctx) {
+		VariableReference operatorVariableReference = (VariableReference) currentContainer.pop();
+		currentContainer.peek().addChild(operatorVariableReference);
+	}
+	
 
 	@Override
 	public void enterVariableassignment(nl.han.ica.icss.parser.ICSSParser.VariableassignmentContext ctx) {
@@ -217,39 +256,39 @@ public class ASTListener extends ICSSBaseListener {
 
 
 	@Override
-	public void enterAddoperation(nl.han.ica.icss.parser.ICSSParser.AddoperationContext ctx) {
+	public void enterAdd(nl.han.ica.icss.parser.ICSSParser.AddContext ctx) {
 		ASTNode addOperation = new AddOperation();
 		currentContainer.push(addOperation);
 	}
 
 	@Override
-	public void exitAddoperation(nl.han.ica.icss.parser.ICSSParser.AddoperationContext ctx) {
+	public void exitAdd(nl.han.ica.icss.parser.ICSSParser.AddContext ctx) {
 		AddOperation addOperation = (AddOperation) currentContainer.pop();
 		currentContainer.peek().addChild(addOperation);
 	}
 
 
 	@Override
-	public void enterSubtractoperation(nl.han.ica.icss.parser.ICSSParser.SubtractoperationContext ctx) {
+	public void enterSubtract(nl.han.ica.icss.parser.ICSSParser.SubtractContext ctx) {
 		ASTNode subtractOperation = new SubtractOperation();
 		currentContainer.push(subtractOperation);
 	}
 
 	@Override
-	public void exitSubtractoperation(nl.han.ica.icss.parser.ICSSParser.SubtractoperationContext ctx) {
+	public void exitSubtract(nl.han.ica.icss.parser.ICSSParser.SubtractContext ctx) {
 		SubtractOperation subtractOperation = (SubtractOperation) currentContainer.pop();
 		currentContainer.peek().addChild(subtractOperation);
 	}
 
 
 	@Override
-	public void enterMultiplyoperation(nl.han.ica.icss.parser.ICSSParser.MultiplyoperationContext ctx) {
+	public void enterMultiply(nl.han.ica.icss.parser.ICSSParser.MultiplyContext ctx) {
 		ASTNode multiplyOperation = new SubtractOperation();
 		currentContainer.push(multiplyOperation);
 	}
 
 	@Override
-	public void exitMultiplyoperation(nl.han.ica.icss.parser.ICSSParser.MultiplyoperationContext ctx) {
+	public void exitMultiply(nl.han.ica.icss.parser.ICSSParser.MultiplyContext ctx) {
 		MultiplyOperation multiplyOperation = (MultiplyOperation) currentContainer.pop();
 		currentContainer.peek().addChild(multiplyOperation);
 	}
@@ -257,11 +296,7 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterIfclause(nl.han.ica.icss.parser.ICSSParser.IfclauseContext ctx) {
-		Expression conditionalExpression = ctx.conditionalexpression().booleanvalue() != null
-				? new BoolLiteral(ctx.conditionalexpression().getText())
-				: new VariableReference(ctx.conditionalexpression().getText());
-		ArrayList<ASTNode> body = new ArrayList();
-		ASTNode ifClause = new IfClause(conditionalExpression, body);
+		ASTNode ifClause = new IfClause();
 		currentContainer.push(ifClause);
 	}
 
@@ -274,8 +309,7 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterElseclause(nl.han.ica.icss.parser.ICSSParser.ElseclauseContext ctx) {
-		ArrayList<ASTNode> body = new ArrayList();
-		ASTNode elseClause = new ElseClause(body);
+		ASTNode elseClause = new ElseClause();
 		currentContainer.push(elseClause);
 	}
 
@@ -283,5 +317,29 @@ public class ASTListener extends ICSSBaseListener {
 	public void exitElseclause(nl.han.ica.icss.parser.ICSSParser.ElseclauseContext ctx) {
 		ElseClause elseClause = (ElseClause) currentContainer.pop();
 		currentContainer.peek().addChild(elseClause);
+	}
+
+	@Override
+	public void enterBooleanLiteralCondition(nl.han.ica.icss.parser.ICSSParser.BooleanLiteralConditionContext ctx) {
+		ASTNode booleanLiteralCondition = new BoolLiteral(ctx.getText());
+		currentContainer.push(booleanLiteralCondition);
+	}
+
+	@Override
+	public void exitBooleanLiteralCondition(nl.han.ica.icss.parser.ICSSParser.BooleanLiteralConditionContext ctx) {
+		Expression BooleanLiteralCondition = (Expression) currentContainer.pop();
+		currentContainer.peek().addChild(BooleanLiteralCondition);
+	}
+
+	@Override
+	public void enterBooleanVariableCondition(nl.han.ica.icss.parser.ICSSParser.BooleanVariableConditionContext ctx) {
+		ASTNode booleanVariableCondition = new VariableReference(ctx.getText());
+		currentContainer.push(booleanVariableCondition);
+	}
+
+	@Override
+	public void exitBooleanVariableCondition(nl.han.ica.icss.parser.ICSSParser.BooleanVariableConditionContext ctx) {
+		Expression booleanVariableCondition = (Expression) currentContainer.pop();
+		currentContainer.peek().addChild(booleanVariableCondition);
 	}
 }

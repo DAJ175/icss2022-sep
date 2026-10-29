@@ -68,31 +68,27 @@ ifclause: IF BOX_BRACKET_OPEN conditionalexpression BOX_BRACKET_CLOSE thenclause
 elseclause: ELSE thenclause;
 thenclause: OPEN_BRACE styleline* CLOSE_BRACE;
 
-conditionalexpression: booleanvalue | booleanvarref;
-expression: value | operation | variablereference;
+conditionalexpression:
+    (TRUE | FALSE) # BooleanLiteralCondition
+    | variablereference # BooleanVariableCondition;
 
-operation: (addoperation | subtractoperation | multiplyoperation)+;
-addoperation: operatorvalue PLUS operatorvalue;
-subtractoperation: operatorvalue MIN operatorvalue;
-multiplyoperation: operatorvalue MUL operatorvalue;
+expression: value | variablereference | operation;
 
+operation: (add | subtract | multiply)+;
+add: operatorvalue PLUS operatorvalue;
+subtract: operatorvalue MIN operatorvalue;
+multiply: operatorvalue MUL operatorvalue;
 
-value: booleanvalue | colorvalue | pixelvalue | percentagevalue | scalarvalue | variablereference;
+operatorvalue:
+    PIXELSIZE # OperatorPixelLiteral
+    | SCALAR # OperatorScalarLiteral
+    | variablereference # OperatorVariableReference;
 
-operatorvalue: pixelvalue | percentagevalue | scalarvalue | operationalvarref;
-pixelvalue: PIXELSIZE;
-percentagevalue: PERCENTAGE;
-scalarvalue: SCALAR;
-booleanvalue: TRUE | FALSE;
-colorvalue: COLOR;
+value:
+    (TRUE | FALSE) # BooleanLiteral
+    | COLOR # ColorLiteral
+    | PIXELSIZE # PixelLiteral
+    | PERCENTAGE # PercentageLiteral
+    | SCALAR # ScalarLiteral;
 
-variablereference: scalarvarref | pixelvarref | percentagevarref | booleanvarref | colorvarref |  operationalvarref;
-
-scalarvarref: CAPITAL_IDENT | LOWER_IDENT;
-pixelvarref: CAPITAL_IDENT | LOWER_IDENT;
-percentagevarref: CAPITAL_IDENT | LOWER_IDENT;
-booleanvarref: CAPITAL_IDENT | LOWER_IDENT;
-colorvarref: CAPITAL_IDENT | LOWER_IDENT;
-operationalvarref: percentagevarref | pixelvarref | scalarvarref;
-
-
+variablereference: CAPITAL_IDENT | LOWER_IDENT;
