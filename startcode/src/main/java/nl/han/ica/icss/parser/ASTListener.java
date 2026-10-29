@@ -227,7 +227,7 @@ public class ASTListener extends ICSSBaseListener {
 		VariableReference operatorVariableReference = (VariableReference) currentContainer.pop();
 		currentContainer.peek().addChild(operatorVariableReference);
 	}
-	
+
 
 	@Override
 	public void enterVariableassignment(nl.han.ica.icss.parser.ICSSParser.VariableassignmentContext ctx) {
