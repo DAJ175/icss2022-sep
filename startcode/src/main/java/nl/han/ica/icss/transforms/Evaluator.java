@@ -87,7 +87,6 @@ public class Evaluator implements Transform {
         if (operation instanceof AddOperation){
             lhs.value = lhs.value + rhs.value;
         }
-        System.out.println(lhs.value);
         return lhs;
     }
 
