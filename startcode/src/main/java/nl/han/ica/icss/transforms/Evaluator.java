@@ -1,6 +1,7 @@
 package nl.han.ica.icss.transforms;
 
 import nl.han.ica.icss.ast.*;
+import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
@@ -33,27 +34,29 @@ public class Evaluator implements Transform {
                 assignVariable((VariableAssignment) child);
             }
             if (child instanceof Stylerule) {
-                transformStylerule((Stylerule) child);
+                transformNodes(child.getChildren());
             }
 
         }
         variableValues.removeFirst();
     }
 
-    private void transformStylerule(Stylerule stylerule) {
+    private void transformNodes(ArrayList<ASTNode> children) {
         variableValues.addFirst(new HashMap<String, Literal>());
-        ArrayList<ASTNode> children = stylerule.getChildren();
         for (ASTNode child : children) {
             if (child instanceof Declaration) {
                 transformDeclaration((Declaration) child);
             }
             if (child instanceof IfClause) {
-                transformIfClause((IfClause) child);
+                ArrayList<ASTNode> body = transformIfClause((IfClause) child);
+                children.addAll(body);
             }
             if (child instanceof VariableAssignment){
                 assignVariable((VariableAssignment) child);
+
             }
         }
+
         variableValues.removeFirst();
     }
 
@@ -62,7 +65,29 @@ public class Evaluator implements Transform {
     }
 
     private ArrayList<ASTNode> transformIfClause (IfClause ifClause){
-        return new ArrayList<>();
+        variableValues.addFirst(new HashMap<String, Literal>());
+        ArrayList<ASTNode> body;
+        if (getBooleanValue(ifClause.conditionalExpression)){
+            body = ifClause.body;
+        } else if (ifClause.elseClause != null) {
+            body = ifClause.elseClause.body;
+        } else {
+            body = new ArrayList<>();
+        }
+        transformNodes(body);
+        variableValues.removeFirst();
+        return body;
+    }
+
+    private boolean getBooleanValue(Expression conditionalExpression) {
+        if (conditionalExpression instanceof BoolLiteral){
+            return ((BoolLiteral) conditionalExpression).value;
+        }
+        if (conditionalExpression instanceof VariableReference) {
+            BoolLiteral literal = (BoolLiteral) getVariableReferenceLiteral((VariableReference) conditionalExpression);
+            return literal.value;
+        }
+        return false;
     }
 
     private Literal transformExpression (Expression expression) {
