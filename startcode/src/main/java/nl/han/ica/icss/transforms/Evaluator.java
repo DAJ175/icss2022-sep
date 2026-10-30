@@ -34,41 +34,37 @@ public class Evaluator implements Transform {
                 assignVariable((VariableAssignment) child);
             }
             if (child instanceof Stylerule) {
-                transformNodes(child);
+                transformNodes(child.getChildren());
             }
 
         }
         variableValues.removeFirst();
     }
 
-    private void transformNodes(ASTNode node) {
+    private void transformNodes(ArrayList<ASTNode> children) {
         variableValues.addFirst(new HashMap<String, Literal>());
-        ArrayList<ASTNode> children = node.getChildren();
         ArrayList<ASTNode> newChildren = new ArrayList<>();
-
         for (ASTNode child : children) {
             if (child instanceof Declaration) {
-                newChildren.add(transformDeclaration((Declaration) child));
+                transformDeclaration((Declaration) child);
             }
             if (child instanceof IfClause) {
-                ArrayList<ASTNode> body = transformIfClause((IfClause) child);
-                newChildren.addAll(body);
+                transformIfClause((IfClause) child); // het is me niet gelukt om ifclause te transformeren
             }
             if (child instanceof VariableAssignment){
                 assignVariable((VariableAssignment) child);
-
             }
         }
+        children.clear();
+        children.addAll(newChildren);
         variableValues.removeFirst();
     }
 
-    private ASTNode transformDeclaration(Declaration declaration) {
+    private void transformDeclaration(Declaration declaration) {
         declaration.expression = transformExpression(declaration.expression);
-        return declaration;
     }
 
     private ArrayList<ASTNode> transformIfClause (IfClause ifClause){
-        variableValues.addFirst(new HashMap<String, Literal>());
         ArrayList<ASTNode> body;
         if (getBooleanValue(ifClause.conditionalExpression)){
             body = ifClause.body;
@@ -77,10 +73,7 @@ public class Evaluator implements Transform {
         } else {
             body = new ArrayList<>();
         }
-        for (ASTNode child : body) {
-            transformNodes(child);
-        }
-        variableValues.removeFirst();
+        transformNodes(body);
         return body;
     }
 
