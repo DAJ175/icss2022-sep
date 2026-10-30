@@ -1,11 +1,11 @@
 package nl.han.ica.icss.ast.literals;
 
 import nl.han.ica.icss.ast.Literal;
+import nl.han.ica.icss.ast.OperatorLiteral;
 
 import java.util.Objects;
 
-public class ScalarLiteral extends Literal {
-    public int value;
+public class ScalarLiteral extends OperatorLiteral {
 
     public ScalarLiteral(int value) {
         this.value = value;
