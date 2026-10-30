@@ -2,6 +2,8 @@ package nl.han.ica.icss.checker;
 
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.ArrayList;
@@ -45,29 +47,107 @@ public class Checker {
             if (child instanceof IfClause) {
                 checkIfClause((IfClause) child);
             }
-            if (child instanceof ElseClause) {
-                checkElseClause((ElseClause) child);
-            }
         }
         variableTypes.removeFirst();
     }
 
+    private void checkBody(ArrayList<ASTNode> body) {
+        for (ASTNode item : body) {
+            if (item instanceof VariableAssignment){
+                makeVariableAssignment((VariableAssignment) item);
+            }
+            if (item instanceof Declaration) {
+                checkDeclaration((Declaration) item);
+            }
+            if (item instanceof IfClause) {
+                checkIfClause((IfClause) item);
+            }
+        }
+    }
+
     private void checkElseClause(ElseClause elseClause) {
-        // methode bijna hetzelfde als checkIfClause
         variableTypes.addFirst(new HashMap<String, ExpressionType>());
-        ArrayList<ASTNode> body = elseClause.body;
+        checkBody(elseClause.body);
         variableTypes.removeFirst();
     }
 
     private void checkIfClause(IfClause ifClause) {
         variableTypes.addFirst(new HashMap<String, ExpressionType>());
-        ArrayList<ASTNode> body = ifClause.body;
+        if (ifClause.conditionalExpression == null ) {
+            ifClause.setError("No conditionalExpression found");
+        }
+        if (ifClause.conditionalExpression instanceof VariableReference){
+            if (getVariableReferenceType((VariableReference) ifClause.conditionalExpression) != ExpressionType.BOOL) {
+                ifClause.setError("ConditionalExpression is not a boolean");
+            }
+        }
+        if (ifClause.conditionalExpression instanceof Literal) {
+            if (getLiteralType((Literal) ifClause.conditionalExpression) != ExpressionType.BOOL){
+                ifClause.setError("ConditionalExpression is not a boolean");
+            }
+        }
+
+        checkBody(ifClause.body);
+
+        if (ifClause.elseClause != null) {
+            checkElseClause(ifClause.elseClause);
+        }
         variableTypes.removeFirst();
     }
 
+    private ExpressionType getExpressionType(Expression expression){
+        if (expression instanceof Operation) {
+            return getOperationType((Operation) expression);
+        }
+        if (expression instanceof Literal) {
+            return getLiteralType((Literal) expression);
+        }
+        if (expression instanceof VariableReference) {
+            return getVariableReferenceType((VariableReference) expression);
+        }
+        return ExpressionType.UNDEFINED;
+    }
 
-    private void checkLiteral(Literal literal) {
-        // ik weet nog niet wat ik hier moet checken
+    private ExpressionType getOperationType(Operation operation){
+        if (!acceptableOperationExpression(operation)) {
+            operation.setError("Expression type mismatch");
+        }
+        return ExpressionType.UNDEFINED;
+    }
+
+    private boolean acceptableOperationExpression(Operation operation) {
+        ExpressionType lhsExpressionType = ExpressionType.UNDEFINED;
+        ExpressionType rhsExpressionType = ExpressionType.UNDEFINED;
+        if (operation.lhs instanceof VariableReference) {
+            lhsExpressionType = getVariableReferenceType((VariableReference) operation.lhs);
+        }
+        if (operation.lhs instanceof Literal) {
+            lhsExpressionType = getLiteralType((Literal) operation.lhs);
+        }
+        if (operation.rhs instanceof VariableReference) {
+            rhsExpressionType = getVariableReferenceType((VariableReference) operation.rhs);
+        }
+        if (operation.rhs instanceof Literal) {
+            rhsExpressionType = getLiteralType((Literal) operation.rhs);
+        }
+        return (lhsExpressionType == rhsExpressionType);
+    }
+
+
+    private ExpressionType getLiteralType(Literal literal) {
+        if (literal instanceof BoolLiteral) {
+            return ExpressionType.BOOL;
+        } else if (literal instanceof ColorLiteral) {
+            return ExpressionType.COLOR;
+        } else if (literal instanceof PercentageLiteral) {
+            return ExpressionType.PERCENTAGE;
+        } else if (literal instanceof PixelLiteral) {
+            return ExpressionType.PIXEL;
+        } else if (literal instanceof ScalarLiteral) {
+            return ExpressionType.SCALAR;
+        } else {
+            return ExpressionType.UNDEFINED;
+        }
     }
 
     private ExpressionType getVariableReferenceType(VariableReference variableReference){
@@ -76,12 +156,37 @@ public class Checker {
                 return scope.get(variableReference.name);
             }
         }
+        variableReference.setError("Variable is not defined");
         return ExpressionType.UNDEFINED;
     }
 
     private void checkDeclaration(Declaration declaration) {
-        // ik weet nog niet wat ik hier moet checken
+        ArrayList<ExpressionType> AcceptedTypes = getPropertyTypes(declaration.property);
+        ExpressionType declarationType = getExpressionType(declaration.expression);
+        if (!AcceptedTypes.contains(declarationType)) {
+            declaration.setError(declaration.expression.toString() + "does not match Property");
+        }
     }
+
+    private ArrayList<ExpressionType> getPropertyTypes(PropertyName property) {
+        ArrayList<ExpressionType> acceptedTypes = new ArrayList<>();
+        switch (property.name){
+            case "width":
+            case "height":
+                acceptedTypes.add(ExpressionType.PIXEL);
+                acceptedTypes.add(ExpressionType.PERCENTAGE);
+                acceptedTypes.add(ExpressionType.SCALAR);
+                break;
+            case "color":
+            case "background-color":
+                acceptedTypes.add(ExpressionType.COLOR);
+                break;
+            default:
+                property.setError("Invalid property");
+        }
+        return acceptedTypes;
+    }
+
 
     private void makeVariableAssignment(VariableAssignment variableAssignment) {
         VariableReference reference = variableAssignment.name;

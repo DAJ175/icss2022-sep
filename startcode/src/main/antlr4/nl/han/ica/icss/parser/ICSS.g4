@@ -57,16 +57,16 @@ tagselector: (LOWER_IDENT | CAPITAL_IDENT) ;
 classselector: CLASS_IDENT;
 idselector: ID_IDENT;
 
-styleline: declaration | ifstatement;
+styleline: declaration | ifclause;
 
 declaration: propertyname COLON expression SEMICOLON;
 
 propertyname: LOWER_IDENT;
 
-ifstatement: ifclause elseclause?;
-ifclause: IF BOX_BRACKET_OPEN conditionalexpression BOX_BRACKET_CLOSE thenclause;
+
+ifclause: IF BOX_BRACKET_OPEN conditionalexpression BOX_BRACKET_CLOSE thenclause elseclause?;
 elseclause: ELSE thenclause;
-thenclause: OPEN_BRACE styleline* CLOSE_BRACE;
+thenclause: OPEN_BRACE (styleline | variableassignment)* CLOSE_BRACE;
 
 conditionalexpression:
     (TRUE | FALSE) # BooleanLiteralCondition
