@@ -34,34 +34,37 @@ public class Evaluator implements Transform {
                 assignVariable((VariableAssignment) child);
             }
             if (child instanceof Stylerule) {
-                transformNodes(child.getChildren());
+                transformNodes(child);
             }
 
         }
         variableValues.removeFirst();
     }
 
-    private void transformNodes(ArrayList<ASTNode> children) {
+    private void transformNodes(ASTNode node) {
         variableValues.addFirst(new HashMap<String, Literal>());
+        ArrayList<ASTNode> children = node.getChildren();
+        ArrayList<ASTNode> newChildren = new ArrayList<>();
+
         for (ASTNode child : children) {
             if (child instanceof Declaration) {
-                transformDeclaration((Declaration) child);
+                newChildren.add(transformDeclaration((Declaration) child));
             }
             if (child instanceof IfClause) {
                 ArrayList<ASTNode> body = transformIfClause((IfClause) child);
-                children.addAll(body);
+                newChildren.addAll(body);
             }
             if (child instanceof VariableAssignment){
                 assignVariable((VariableAssignment) child);
 
             }
         }
-
         variableValues.removeFirst();
     }
 
-    private void transformDeclaration(Declaration declaration) {
+    private ASTNode transformDeclaration(Declaration declaration) {
         declaration.expression = transformExpression(declaration.expression);
+        return declaration;
     }
 
     private ArrayList<ASTNode> transformIfClause (IfClause ifClause){
@@ -74,7 +77,9 @@ public class Evaluator implements Transform {
         } else {
             body = new ArrayList<>();
         }
-        transformNodes(body);
+        for (ASTNode child : body) {
+            transformNodes(child);
+        }
         variableValues.removeFirst();
         return body;
     }
