@@ -72,19 +72,15 @@ conditionalexpression:
     (TRUE | FALSE) # BooleanLiteralCondition
     | variablereference # BooleanVariableCondition;
 
-expression: value | variablereference | operation;
+expression: value # Val
+    | expression MUL expression # Multiply
+    | expression PLUS expression # Add
+    | expression MIN expression # Subtract;
 
-operation: (add | subtract | multiply)+;
-add: operatorvalue PLUS operatorvalue;
-subtract: operatorvalue MIN operatorvalue;
-multiply: operatorvalue MUL operatorvalue;
 
-operatorvalue:
-    PIXELSIZE # OperatorPixelLiteral
-    | SCALAR # OperatorScalarLiteral
-    | variablereference # OperatorVariableReference;
+value: literal | variablereference;
 
-value:
+literal:
     (TRUE | FALSE) # BooleanLiteral
     | COLOR # ColorLiteral
     | PIXELSIZE # PixelLiteral

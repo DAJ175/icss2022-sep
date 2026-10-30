@@ -1,8 +1,5 @@
 package nl.han.ica.icss.parser;
 
-import java.util.ArrayList;
-import java.util.Stack;
-
 
 import nl.han.ica.datastructures.HANStack;
 import nl.han.ica.datastructures.IHANStack;
@@ -191,45 +188,6 @@ public class ASTListener extends ICSSBaseListener {
 
 
 	@Override
-	public void enterOperatorPixelLiteral(nl.han.ica.icss.parser.ICSSParser.OperatorPixelLiteralContext ctx) {
-		ASTNode operatorPixelLiteral = new PixelLiteral(ctx.getText());
-		currentContainer.push(operatorPixelLiteral);
-	}
-
-	@Override
-	public void exitOperatorPixelLiteral(nl.han.ica.icss.parser.ICSSParser.OperatorPixelLiteralContext ctx) {
-		PixelLiteral operatorPixelLiteral = (PixelLiteral) currentContainer.pop();
-		currentContainer.peek().addChild(operatorPixelLiteral);
-	}
-
-
-	@Override
-	public void enterOperatorScalarLiteral(nl.han.ica.icss.parser.ICSSParser.OperatorScalarLiteralContext ctx) {
-		ASTNode operatorScalarLiteral = new ScalarLiteral(ctx.getText());
-		currentContainer.push(operatorScalarLiteral);
-	}
-
-	@Override
-	public void exitOperatorScalarLiteral(nl.han.ica.icss.parser.ICSSParser.OperatorScalarLiteralContext ctx) {
-		ScalarLiteral operatorScalarLiteral = (ScalarLiteral) currentContainer.pop();
-		currentContainer.peek().addChild(operatorScalarLiteral);
-	}
-
-
-	@Override
-	public void enterOperatorVariableReference(nl.han.ica.icss.parser.ICSSParser.OperatorVariableReferenceContext ctx) {
-		ASTNode operatorVariableReference = new VariableReference(ctx.getText());
-		currentContainer.push(operatorVariableReference);
-	}
-
-	@Override
-	public void exitOperatorVariableReference(nl.han.ica.icss.parser.ICSSParser.OperatorVariableReferenceContext ctx) {
-		VariableReference operatorVariableReference = (VariableReference) currentContainer.pop();
-		currentContainer.peek().addChild(operatorVariableReference);
-	}
-
-
-	@Override
 	public void enterVariableassignment(nl.han.ica.icss.parser.ICSSParser.VariableassignmentContext ctx) {
 		ASTNode variableAssignment = new VariableAssignment();
 		currentContainer.push(variableAssignment);
@@ -283,7 +241,7 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterMultiply(nl.han.ica.icss.parser.ICSSParser.MultiplyContext ctx) {
-		ASTNode multiplyOperation = new SubtractOperation();
+		ASTNode multiplyOperation = new MultiplyOperation();
 		currentContainer.push(multiplyOperation);
 	}
 

@@ -4,6 +4,7 @@ import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.ArrayList;
@@ -51,48 +52,12 @@ public class Checker {
         variableTypes.removeFirst();
     }
 
-    private void checkBody(ArrayList<ASTNode> body) {
-        for (ASTNode item : body) {
-            if (item instanceof VariableAssignment){
-                makeVariableAssignment((VariableAssignment) item);
-            }
-            if (item instanceof Declaration) {
-                checkDeclaration((Declaration) item);
-            }
-            if (item instanceof IfClause) {
-                checkIfClause((IfClause) item);
-            }
+    private void checkDeclaration(Declaration declaration) {
+        ArrayList<ExpressionType> AcceptedTypes = getPropertyTypes(declaration.property);
+        ExpressionType declarationType = getExpressionType(declaration.expression);
+        if (!AcceptedTypes.contains(declarationType)) {
+            declaration.setError(declaration.expression.toString() + "does not match Property");
         }
-    }
-
-    private void checkElseClause(ElseClause elseClause) {
-        variableTypes.addFirst(new HashMap<String, ExpressionType>());
-        checkBody(elseClause.body);
-        variableTypes.removeFirst();
-    }
-
-    private void checkIfClause(IfClause ifClause) {
-        variableTypes.addFirst(new HashMap<String, ExpressionType>());
-        if (ifClause.conditionalExpression == null ) {
-            ifClause.setError("No conditionalExpression found");
-        }
-        if (ifClause.conditionalExpression instanceof VariableReference){
-            if (getVariableReferenceType((VariableReference) ifClause.conditionalExpression) != ExpressionType.BOOL) {
-                ifClause.setError("ConditionalExpression is not a boolean");
-            }
-        }
-        if (ifClause.conditionalExpression instanceof Literal) {
-            if (getLiteralType((Literal) ifClause.conditionalExpression) != ExpressionType.BOOL){
-                ifClause.setError("ConditionalExpression is not a boolean");
-            }
-        }
-
-        checkBody(ifClause.body);
-
-        if (ifClause.elseClause != null) {
-            checkElseClause(ifClause.elseClause);
-        }
-        variableTypes.removeFirst();
     }
 
     private ExpressionType getExpressionType(Expression expression){
@@ -109,13 +74,23 @@ public class Checker {
     }
 
     private ExpressionType getOperationType(Operation operation){
-        if (!acceptableOperationExpression(operation)) {
-            operation.setError("Expression type mismatch");
+        checkOperationExpression(operation);
+        ExpressionType operationType;
+        ExpressionType lhsExpressionType = getExpressionType(operation.lhs);
+        ExpressionType rhsExpressionType = getExpressionType(operation.rhs);
+        if (lhsExpressionType == ExpressionType.SCALAR && rhsExpressionType == ExpressionType.SCALAR){
+            operationType = ExpressionType.SCALAR;
+        } else if (lhsExpressionType == ExpressionType.SCALAR ){
+            operationType = rhsExpressionType;
+        } else if (rhsExpressionType == ExpressionType.SCALAR){
+            operationType = lhsExpressionType;
+        } else {
+            operationType = lhsExpressionType;
         }
-        return ExpressionType.UNDEFINED;
+        return operationType;
     }
 
-    private boolean acceptableOperationExpression(Operation operation) {
+    private void checkOperationExpression(Operation operation) {
         ExpressionType lhsExpressionType = ExpressionType.UNDEFINED;
         ExpressionType rhsExpressionType = ExpressionType.UNDEFINED;
         if (operation.lhs instanceof VariableReference) {
@@ -124,15 +99,36 @@ public class Checker {
         if (operation.lhs instanceof Literal) {
             lhsExpressionType = getLiteralType((Literal) operation.lhs);
         }
+        if (operation.lhs instanceof Operation) {
+            lhsExpressionType = getOperationType((Operation) operation.lhs);
+        }
         if (operation.rhs instanceof VariableReference) {
             rhsExpressionType = getVariableReferenceType((VariableReference) operation.rhs);
         }
         if (operation.rhs instanceof Literal) {
             rhsExpressionType = getLiteralType((Literal) operation.rhs);
         }
-        return (lhsExpressionType == rhsExpressionType);
-    }
+        if (operation.rhs instanceof Operation) {
+            rhsExpressionType = getOperationType((Operation) operation.rhs);
+        }
+        if (operation instanceof MultiplyOperation) {
+            ArrayList<ExpressionType> mathables = new ArrayList<>();
+            mathables.add(ExpressionType.PERCENTAGE);
+            mathables.add(ExpressionType.PIXEL);
+            mathables.add(ExpressionType.SCALAR);
 
+            boolean validMultiplication = (rhsExpressionType == ExpressionType.SCALAR && mathables.contains(lhsExpressionType))
+                    || (lhsExpressionType == ExpressionType.SCALAR && mathables.contains(rhsExpressionType));
+
+            if (!validMultiplication){
+                operation.setError("Input: " + operation.lhs + " and " + operation.rhs + " can not multiply");
+            }
+        } else {
+            if (!(lhsExpressionType == rhsExpressionType)) {
+                operation.setError("Input: " + operation.lhs + " and " + operation.rhs + " are not the same type");
+            }
+        }
+    }
 
     private ExpressionType getLiteralType(Literal literal) {
         if (literal instanceof BoolLiteral) {
@@ -158,14 +154,6 @@ public class Checker {
         }
         variableReference.setError("Variable is not defined");
         return ExpressionType.UNDEFINED;
-    }
-
-    private void checkDeclaration(Declaration declaration) {
-        ArrayList<ExpressionType> AcceptedTypes = getPropertyTypes(declaration.property);
-        ExpressionType declarationType = getExpressionType(declaration.expression);
-        if (!AcceptedTypes.contains(declarationType)) {
-            declaration.setError(declaration.expression.toString() + "does not match Property");
-        }
     }
 
     private ArrayList<ExpressionType> getPropertyTypes(PropertyName property) {
@@ -210,8 +198,55 @@ public class Checker {
                 }
             }
             expression.setError("Variable Not Found");
+        } else if (expression instanceof Operation){
+            checkOperationExpression((Operation) expression);
+            variableTypes.getFirst().put(reference.name, getOperationType((Operation) expression));
         } else {
             expression.setError("Not Valid Assignment Syntax");
         }
+    }
+
+    private void checkBody(ArrayList<ASTNode> body) {
+        for (ASTNode item : body) {
+            if (item instanceof VariableAssignment){
+                makeVariableAssignment((VariableAssignment) item);
+            }
+            if (item instanceof Declaration) {
+                checkDeclaration((Declaration) item);
+            }
+            if (item instanceof IfClause) {
+                checkIfClause((IfClause) item);
+            }
+        }
+    }
+
+    private void checkElseClause(ElseClause elseClause) {
+        variableTypes.addFirst(new HashMap<String, ExpressionType>());
+        checkBody(elseClause.body);
+        variableTypes.removeFirst();
+    }
+
+    private void checkIfClause(IfClause ifClause) {
+        variableTypes.addFirst(new HashMap<String, ExpressionType>());
+        if (ifClause.conditionalExpression == null ) {
+            ifClause.setError("No conditionalExpression found");
+        }
+        if (ifClause.conditionalExpression instanceof VariableReference){
+            if (getVariableReferenceType((VariableReference) ifClause.conditionalExpression) != ExpressionType.BOOL) {
+                ifClause.setError("ConditionalExpression is not a boolean");
+            }
+        }
+        if (ifClause.conditionalExpression instanceof Literal) {
+            if (getLiteralType((Literal) ifClause.conditionalExpression) != ExpressionType.BOOL){
+                ifClause.setError("ConditionalExpression is not a boolean");
+            }
+        }
+
+        checkBody(ifClause.body);
+
+        if (ifClause.elseClause != null) {
+            checkElseClause(ifClause.elseClause);
+        }
+        variableTypes.removeFirst();
     }
 }
